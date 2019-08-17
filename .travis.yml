@@ -1,0 +1,12 @@
+language: minimal
+dist: xenial
+
+jobs:
+  include:
+    - stage: deploy
+      if: branch IN (master, develop) OR tag IS present
+      script:
+        - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+        - docker build -t ingtranet/stan-to-logz:$TRAVIS_BRANCH .
+        - docker images
+        - docker push ingtranet/stan-to-logz:$TRAVIS_BRANCH
