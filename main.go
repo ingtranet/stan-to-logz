@@ -41,7 +41,7 @@ func main() {
 
 
 	qcb := func (m *stan.Msg) {
-		flatMsg, err := flatten.FlattenString(string(m.Data), "", flatten.DotStyle)
+		flatMsg, err := flatten.FlattenString(string(m.Data), "", flatten.UnderscoreStyle)
 		if err != nil {
 			println(err.Error())
 			return
