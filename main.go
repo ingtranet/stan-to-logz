@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/jeremywohl/flatten"
 	"github.com/logzio/logzio-go"
 	"github.com/nats-io/stan.go"
 	"os"
@@ -40,7 +41,12 @@ func main() {
 
 
 	qcb := func (m *stan.Msg) {
-		if err := l.Send(m.Data); err != nil {
+		flatMsg, err := flatten.FlattenString(string(m.Data), "", flatten.DotStyle)
+		if err != nil {
+			println(err.Error())
+			return
+		}
+		if err := l.Send([]byte(flatMsg)); err != nil {
 			println(err.Error())
 		}
 	}
