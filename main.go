@@ -4,11 +4,21 @@ import (
 	"github.com/jeremywohl/flatten"
 	"github.com/logzio/logzio-go"
 	"github.com/nats-io/stan.go"
+	"github.com/valyala/fastjson"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 )
+
+func addStanSubject(input string, subject string) ([]byte, error) {
+	value, err := fastjson.Parse(input)
+	if err != nil {
+		return nil, err
+	}
+	value.Set("stan_subject", fastjson.MustParse(`"` + subject + `"`))
+	return value.MarshalTo(nil), nil
+}
 
 func main() {
 	logzioToken := os.Getenv("LOGZIO_TOKEN")
@@ -17,6 +27,7 @@ func main() {
 	subject := os.Getenv("SUBJECT")
 	queueGroup := os.Getenv("QUEUE_GROUP")
 	durableName := queueGroup
+
 
 	l, err := logzio.New(
 		logzioToken,
@@ -46,7 +57,12 @@ func main() {
 			println(err.Error())
 			return
 		}
-		if err := l.Send([]byte(flatMsg)); err != nil {
+		msgWithSubject, err := addStanSubject(flatMsg, subject)
+		if err != nil {
+			println(err.Error())
+			return
+		}
+		if err := l.Send(msgWithSubject); err != nil {
 			println(err.Error())
 		}
 	}
